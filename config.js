@@ -1,4 +1,5 @@
 module.exports = {
   prefix: '$_$',
-  windowId: '$__$'
+  windowId: '$__$',
+  browser: false
 };

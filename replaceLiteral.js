@@ -14,6 +14,7 @@ function replaceLiteral(ast, _literalMap) {
 
 function _walk(node) {
   walk(node, (node) => {
+    // replace literal
     if (node.type === 'Literal') {
       let uglyId;
       if (uglyId = literalMap.get(node.value)) {
@@ -22,17 +23,13 @@ function _walk(node) {
           name: uglyId
         });
       }
-    } else if (node.type === 'ObjectExpression') {
-      for (let prop of node.properties) _walk(prop.value);
+    // don't treat keys of object literal as literals
+    } else if (node.type === 'Property') {
+      _walk(node.value);
     } else {
       for (let key in node) _walk(node[key]);
     }
   });
-}
-
-function encodeKey(key) {
-  let uglyId = literalMap.get(key.name);
-  if (uglyId) key.name = uglyId;
 }
 
 module.exports = replaceLiteral;

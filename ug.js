@@ -25,7 +25,7 @@ function wrap(ast, literalMap) {
       bodys = [];
   args.push({
     type: 'Identifier',
-    name: 'window'
+    name: config.browser ? 'window' : 'global'
   });
   params.push({
     type: 'Identifier',

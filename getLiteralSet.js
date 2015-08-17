@@ -14,13 +14,14 @@ let ast = require('./ast'),
     walk = ast.walk,
     isFunc = ast.isFunc;
 
-let declSetStack, declSet, literalSet;
+let declSetStack, declSet, literalSet, inWith;
 
 function getLiteralSet(ast) {
   declSetStack = [];
   declSetStack.push(declSet = getDeclSet(ast));
   declSet.add(config.windowId);
   literalSet = new Set;
+  inWith = false;
   _walk(ast);
   return literalSet;
 }
@@ -50,8 +51,8 @@ function _walk(node) {
     } else if (node.type === 'Literal') {
       // ignore 'use strict'
       if (node.value !== 'use strict') literalSet.add(node.value);
-    // rewrite global var
-    } else if (node.type === 'Identifier' && !declSet.has(node.name)) {
+    // rewrite global var (don't rewrite in with statement)
+    } else if (node.type === 'Identifier' && !declSet.has(node.name) && !inWith) {
       literalSet.add(node.name);
       utils.assignObj(node, {
         type: 'MemberExpression',
@@ -65,8 +66,13 @@ function _walk(node) {
           value: node.name
         }
       });
-    } else if (node.type === 'Property' && node.key.type === 'Identifier') {
-      literalSet.add(node.key.name);
+    // with statement
+    } else if (node.type === 'WithStatement') {
+      inWith = true;
+      _walk(node.body);
+      inWith = false;
+    // ignore keys of object literals
+    } else if (node.type === 'Property') {
       _walk(node.value);
     } else {
       for (let key in node) _walk(node[key]);

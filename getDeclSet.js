@@ -1,6 +1,7 @@
 'use strict';
 
 let ast = require('./ast'),
+    browser = require('./config').browser,
     walk = ast.walk,
     isDecl = ast.isDecl,
     isFunc = ast.isFunc,
@@ -8,16 +9,19 @@ let ast = require('./ast'),
 
 function getDeclSet(ast) {
   declSet = new Set;
-  // is function, add 'arguments' and params to decl set, walk in the body
+  if (!browser) {
+    for (let param of ['module', 'exports', 'require', '__dirname', '__filename']) declSet.add(param);
+  }
+  // is function, add 'arguments' and params to decl set, walk into the body
   if (isFunc(ast)) {
     declSet.add('arguments');
     for (let param of ast.params) declSet.add(param.name);
     _walk(ast.body);
-  // is catch clause, add param to decl set, walk in the body
+  // is catch clause, add param to decl set, walk into the body
   } else if (ast.type === 'CatchClause') {
     declSet.add(ast.param.name);
     _walk(ast.body);
-  // not function, walk in
+  // not function, walk into
   } else {
     _walk(ast);
   }
