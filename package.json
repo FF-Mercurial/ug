@@ -1,0 +1,17 @@
+{
+  "name": "ug",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ug.js",
+  "dependencies": {
+    "escodegen": "^1.6.1",
+    "esprima": "^2.5.0",
+    "uglify-js": "^2.4.24"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
