@@ -1,37 +1,57 @@
 'use strict';
 
-let getLiteralSet = require('./getLiteralSet'),
+var getLiteralSet = require('./getLiteralSet'),
     idGen = require('./idGen'),
-    replaceLiteral = require('./replaceLiteral'),
+    replace = require('./replace'),
     utils = require('./utils'),
-    config = require('./config');
+    config = require('./config'),
+    replaceOuter = require('./replaceOuter'),
+    Map = require('./Map');
+
+config.defined = ['window', 'undefined'];
 
 function ug(ast) {
-  let literalSet = getLiteralSet(ast),
-      literalMap = new Map;
-  for (let item of literalSet) literalMap.set(item, idGen.next());
-  for (let item of literalMap) {
-    if (item[1] === '$$475') {
-      // console.log(item[0]);
-    }
-  }
-  replaceLiteral(ast, literalMap);
-  return wrap(ast, literalMap);
+  var literalSet = getLiteralSet(ast),
+      literalMap = new Map,
+      definedMap = new Map;
+  idGen.init();
+  config.thisId = idGen.next();
+  replaceOuter(ast.body);
+  literalSet.forEach(function (item) {
+    literalMap.set(item, idGen.next());
+  });
+  config.defined.forEach(function (item) {
+    definedMap.set(item, idGen.next());
+  });
+  console.log(JSON.stringify(ast, null, 2));
+  replace(ast, literalMap, definedMap);
+  console.log(JSON.stringify(ast, null, 2));
+  return wrap(ast, literalMap, definedMap);
 }
 
-function wrap(ast, literalMap) {
-  let args = [],
+function wrap(ast, literalMap, definedMap) {
+  var args = [],
       params = [],
-      bodys = [];
+      bodys = [],
+      varMap = new Map;
   args.push({
-    type: 'Identifier',
-    name: config.browser ? 'window' : 'global'
+    type: 'ThisExpression'
   });
   params.push({
     type: 'Identifier',
-    name: config.windowId
+    name: config.thisId
   });
-  for (let item of literalMap) {
+  definedMap.forEach(function (item) {
+    args.push({
+      type: 'Identifier',
+      name: item[0]
+    });
+    params.push({
+      type: 'Identifier',
+      name: item[1]
+    });
+  });
+  literalMap.forEach(function (item) {
     args.push({
       type: 'Literal',
       value: item[0]
@@ -40,8 +60,10 @@ function wrap(ast, literalMap) {
       type: 'Identifier',
       name: item[1]
     });
-  }
-  for (let item of ast.body) bodys.push(item);
+  });
+  ast.body.forEach(function (item) {
+    bodys.push(item);
+  });
   return {
     type: 'Program',
     body: [

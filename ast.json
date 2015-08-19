@@ -1,0 +1,39 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "id": {
+            "type": "Identifier",
+            "name": "a"
+          },
+          "init": null
+        },
+        {
+          "type": "VariableDeclarator",
+          "id": {
+            "type": "Identifier",
+            "name": "b"
+          },
+          "init": {
+            "type": "Literal",
+            "value": "b",
+            "raw": "'b'"
+          }
+        },
+        {
+          "type": "VariableDeclarator",
+          "id": {
+            "type": "Identifier",
+            "name": "c"
+          },
+          "init": null
+        }
+      ],
+      "kind": "var"
+    }
+  ]
+}

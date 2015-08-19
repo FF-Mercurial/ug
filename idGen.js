@@ -1,9 +1,13 @@
 'use strict';
 
-let config = require('./config');
+var config = require('./config');
 
-let nextId = 0;
+var nextId = 0;
 
-exports.next = () => {
+exports.next = function () {
   return config.prefix + nextId++;
+};
+
+exports.init = function () {
+  nextId = 0;
 };

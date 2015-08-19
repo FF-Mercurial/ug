@@ -7,19 +7,20 @@
 
 'use strict';
 
-let ast = require('./ast'),
+var ast = require('./ast'),
     getDeclSet = require('./getDeclSet'),
     utils = require('./utils'),
     config = require('./config'),
+    Set = require('./Set'),
     walk = ast.walk,
     isFunc = ast.isFunc;
 
-let declSetStack, declSet, literalSet, inWith;
+var declSetStack, declSet, literalSet, inWith;
 
 function getLiteralSet(ast) {
   declSetStack = [];
-  declSetStack.push(declSet = getDeclSet(ast));
-  declSet.add(config.windowId);
+  declSetStack.push(declSet = new Set);
+  // declSetStack.push(declSet = getDeclSet(ast));
   literalSet = new Set;
   inWith = false;
   _walk(ast);
@@ -27,7 +28,7 @@ function getLiteralSet(ast) {
 }
 
 function _walk(node) {
-  walk(node, (node) => {
+  walk(node, function (node) {
     // is function, push scope and walk body
     if (isFunc(node)) {
       declSetStack.push(declSet = utils.unionSet(declSet, getDeclSet(node)));
@@ -35,7 +36,7 @@ function _walk(node) {
       declSet = declSetStack.pop();
     // is catch clause, push scope and walk body
     } else if (node.type === 'CatchClause') {
-       declSetStack.push(declSet = utils.unionSet(declSet, getDeclSet(node)));
+      declSetStack.push(declSet = utils.unionSet(declSet, getDeclSet(node)));
       _walk(node.body);
       declSet = declSetStack.pop();
     // rewrite obj.prop
@@ -49,8 +50,10 @@ function _walk(node) {
       _walk(node.object);
     // explicit literal
     } else if (node.type === 'Literal') {
-      // ignore 'use strict'
-      if (node.value !== 'use strict') literalSet.add(node.value);
+      // ignore 'use strict' and regex
+      if (node.value !== 'use strict' && !node.regex) literalSet.add(node.value);
+    } else if (node.type === 'VariableDeclarator') {
+      _walk(node.init);
     // rewrite global var (don't rewrite in with statement)
     } else if (node.type === 'Identifier' && !declSet.has(node.name) && !inWith) {
       literalSet.add(node.name);
@@ -59,7 +62,7 @@ function _walk(node) {
         computed: true,
         object: {
           type: 'Identifier',
-          name: config.windowId
+          name: 'window'
         },
         property: {
           type: 'Literal',
@@ -75,7 +78,9 @@ function _walk(node) {
     } else if (node.type === 'Property') {
       _walk(node.value);
     } else {
-      for (let key in node) _walk(node[key]);
+      Object.getOwnPropertyNames(node).forEach(function (key) {
+        _walk(node[key]);
+      });
     }
   });
 }

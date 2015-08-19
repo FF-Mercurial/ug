@@ -1,21 +1,22 @@
 'use strict';
 
-exports.isDecl = (node) => {
+exports.isDecl = function (node) {
   return (node.type === 'VariableDeclarator' ||
           node.type === 'FunctionDeclaration' ||
           node.type === 'FunctionExpression') &&
           node.id && node.id.name;
-}
+};
 
-exports.isFunc = (node) => {
+exports.isFunc = function (node) {
   return node.type === 'FunctionDeclaration' ||
          node.type === 'FunctionExpression';
-}
+};
 
-exports.walk = function walk(node, cb) {
+exports.walk = function (node, cb) {
   if (node instanceof Array) {
-    for (let item of node) walk(item, cb);
+    var i;
+    for (i = 0; i < node.length; i++) cb(node[i], node, i);
   } else if (typeof node === 'object' && node !== null) {
     cb(node);
   }
-}
+};

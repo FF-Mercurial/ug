@@ -1,25 +1,33 @@
 'use strict';
 
-exports.assignObj = (src, dst) => {
-  for (let key in src) delete src[key];
-  for (let key in dst) src[key] = dst[key];
+var Set = require('./Set');
+
+exports.assignObj = function (src, dst) {
+  var key;
+  for (key in src) delete src[key];
+  for (key in dst) src[key] = dst[key];
 };
 
-exports.unionSet = (set1, set2) => {
-  let res = new Set;
-  for (let item of set1) res.add(item);
-  for (let item of set2) res.add(item);
+exports.unionSet = function (set1, set2) {
+  var res = new Set;
+  set1.forEach(function (item) {
+    res.add(item);
+  });
+  set2.forEach(function (item) {
+    res.add(item);
+  });
   return res;
 };
 
 exports.cloneObj = function cloneObj(obj) {
+  var res, item, key;
   if (obj instanceof Array) {
-    let res = [];
-    for (let item of obj) res.push(cloneObj(item));
+    res = [];
+    for (item of obj) res.push(cloneObj(item));
     return res;
   } else if (typeof obj === 'object' && obj !== null) {
-    let res = {};
-    for (let key in obj) res[key] = cloneObj(obj[key]);
+    res = {};
+    for (key in obj) res[key] = cloneObj(obj[key]);
       return res;
   } else {
     return obj;

@@ -1,5 +1,5 @@
+'use strict';
+
 module.exports = {
-  prefix: '$_$',
-  windowId: '$__$',
-  browser: false
+  prefix: '$_$'
 };

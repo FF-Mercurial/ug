@@ -1,7 +1,8 @@
 'use strict';
 
-let ast = require('./ast'),
-    browser = require('./config').browser,
+var ast = require('./ast'),
+    config = require('./config'),
+    Set = require('./Set'),
     walk = ast.walk,
     isDecl = ast.isDecl,
     isFunc = ast.isFunc,
@@ -9,13 +10,15 @@ let ast = require('./ast'),
 
 function getDeclSet(ast) {
   declSet = new Set;
-  if (!browser) {
-    for (let param of ['module', 'exports', 'require', '__dirname', '__filename']) declSet.add(param);
-  }
+  config.defined.forEach(function (param) {
+    declSet.add(param);
+  });
   // is function, add 'arguments' and params to decl set, walk into the body
   if (isFunc(ast)) {
     declSet.add('arguments');
-    for (let param of ast.params) declSet.add(param.name);
+    ast.params.forEach(function (param) {
+      declSet.add(param.name);
+    })
     _walk(ast.body);
   // is catch clause, add param to decl set, walk into the body
   } else if (ast.type === 'CatchClause') {
@@ -29,15 +32,19 @@ function getDeclSet(ast) {
 }
 
 function _walk(node) {
-  walk(node, (node) => {
-    let id;
+  // console.log('?');
+  walk(node, function (node) {
+    var id;
     // found decl
     if (id = isDecl(node)) declSet.add(id);
     // don't walk in function
     if (!isFunc(node)) {
-      for (let key in node) _walk(node[key]);
+      Object.getOwnPropertyNames(node).forEach(function (key) {
+       _walk(node[key]); 
+      });
     }
   });
+  // console.log('!');
 }
 
 module.exports = getDeclSet;
