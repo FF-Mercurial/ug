@@ -4,7 +4,8 @@ var ast = require('./ast'),
     config = require('./config'),
     utils = require('./utils'),
     walk = ast.walk,
-    isFunc = ast.isFunc;
+    isFunc = ast.isFunc,
+    clearNode = ast.clearNode;
 
 var funcDecls;
 
@@ -16,8 +17,9 @@ function replaceOuter(body) {
   });
 }
 
-function _walk(node) {
-  walk(node, function (node, parent, index) {
+function _walk(node, isExpression) {
+  walk(node, function () {
+    // replace this
     if (node.type === 'ThisExpression') {
       utils.assignObj(node, {
         type: 'Identifier',
@@ -34,8 +36,7 @@ function _walk(node) {
             type: 'MemberExpression',
             computed: true,
             object: {
-              type: 'Identifier',
-              name: 'window'
+              type: 'ThisExpression'
             },
             property: {
               type: 'Literal',
@@ -53,45 +54,49 @@ function _walk(node) {
           }
         }
       });
-      parent.splice(index, 1);
-    // rewrite 'var a, b = 'b', c' to 'window['b'] = 'b''
+      clearNode(node);
+    // rewrite 'var a, b = 'b', c' to 'this['b'] = 'b''
     } else if (node.type === 'VariableDeclaration') {
-      var args = [index, 1];
+      var expressions = [];
       node.declarations.forEach(function (decl) {
         if (decl.init) {
-          args.push({
-            type: 'ExpressionStatement',
-            expression: {
-              type: 'AssignmentExpression',
-              operator: '=',
-              left: {
-                type: 'MemberExpression',
-                computed: true,
-                object: {
-                  type: 'Identifier',
-                  name: 'window'
-                },
-                property: {
-                  type: 'Literal',
-                  value: decl.id.name
-                }
+          _walk(decl.init);
+          expressions.push({
+            type: 'AssignmentExpression',
+            operator: '=',
+            left: {
+              type: 'MemberExpression',
+              computed: true,
+              object: {
+                type: 'Identifier',
+                name: config.thisId
               },
-              right: decl.init
-            }
+              property: {
+                type: 'Literal',
+                value: decl.id.name
+              }
+            },
+            right: decl.init
           });
         }
       });
-      parent.splice.apply(parent, args)
-    // rewrite this
-    } else if (node.type === 'ThisExpression') {
-      utils.assignObj(node, {
-        type: 'Identifier',
-        name: config.thisId
-      });
+      if (expressions.length > 0) {
+        utils.assignObj(node, {
+          type: 'SequenceExpression',
+          expressions: expressions
+        });
+      } else {
+        clearNode(node, isExpression);
+      }
     // don't walk into functions
     } else if (!isFunc(node)) {
       Object.getOwnPropertyNames(node).forEach(function (key) {
-        _walk(node[key]);
+        if (node.type === 'ForStatement' && key === 'init' ||
+            node.type === 'ForInStatement' && key === 'left') {
+          _walk(node[key], true);
+        } else {
+          _walk(node[key]);
+        }
       });
     }
   });

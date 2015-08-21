@@ -1,5 +1,7 @@
 'use strict';
 
+var utils = require('./utils');
+
 exports.isDecl = function (node) {
   return (node.type === 'VariableDeclarator' ||
           node.type === 'FunctionDeclaration' ||
@@ -14,9 +16,23 @@ exports.isFunc = function (node) {
 
 exports.walk = function (node, cb) {
   if (node instanceof Array) {
-    var i;
-    for (i = 0; i < node.length; i++) cb(node[i], node, i);
+    node.forEach(function (child) {
+      cb(child);
+    });
   } else if (typeof node === 'object' && node !== null) {
     cb(node);
+  }
+};
+
+exports.clearNode = function (node, isExpression) {
+  if (isExpression) {
+    utils.assignObj(node, {
+      type: 'SequenceExpression',
+      expressions: []
+    });
+  } else {
+    utils.assignObj(node, {
+      type: 'EmptyStatement'
+    });
   }
 };

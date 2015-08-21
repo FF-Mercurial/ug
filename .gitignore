@@ -3,3 +3,9 @@ input/
 output/
 test/
 test.js
+ast.json
+srcAst.json
+outAst.json
+oout.js
+tmp.js
+out.js

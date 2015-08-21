@@ -18,9 +18,13 @@ var ast = require('./ast'),
 var declSetStack, declSet, literalSet, inWith;
 
 function getLiteralSet(ast) {
+  declSet = new Set;
+  config.defined.forEach(function (item) {
+    declSet.add(item);
+  });
+  declSet.add(config.thisId);
   declSetStack = [];
-  declSetStack.push(declSet = new Set);
-  // declSetStack.push(declSet = getDeclSet(ast));
+  declSetStack.push(declSet);
   literalSet = new Set;
   inWith = false;
   _walk(ast);
@@ -62,7 +66,7 @@ function _walk(node) {
         computed: true,
         object: {
           type: 'Identifier',
-          name: 'window'
+          name: config.thisId
         },
         property: {
           type: 'Literal',

@@ -7,9 +7,12 @@ var parse = require('esprima').parse,
     ug = require('./ug');
 
 function fromStr(srcStr) {
-  var srcAst = parse(srcStr),
-      outAst = ug(srcAst),
-      out = gen(outAst, { format: { indent: { style: '  ' } } });
+  var srcAst = parse(srcStr);
+  // fs.writeFileSync('srcAst.json', JSON.stringify(srcAst, null, 2));
+  var outAst = ug(srcAst);
+  // fs.writeFileSync('outAst.json', JSON.stringify(outAst, null, 2));
+  var out = gen(outAst, { format: { indent: { style: '  ' } } });
+  // fs.writeFileSync('oout.js', out);
   // return out;
   return uglify(out, { fromString: true }).code;
 }

@@ -10,9 +10,6 @@ var ast = require('./ast'),
 
 function getDeclSet(ast) {
   declSet = new Set;
-  config.defined.forEach(function (param) {
-    declSet.add(param);
-  });
   // is function, add 'arguments' and params to decl set, walk into the body
   if (isFunc(ast)) {
     declSet.add('arguments');

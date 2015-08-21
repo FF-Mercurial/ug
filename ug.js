@@ -8,24 +8,22 @@ var getLiteralSet = require('./getLiteralSet'),
     replaceOuter = require('./replaceOuter'),
     Map = require('./Map');
 
-config.defined = ['window', 'undefined'];
+config.defined = ['undefined'];
 
 function ug(ast) {
-  var literalSet = getLiteralSet(ast),
-      literalMap = new Map,
-      definedMap = new Map;
   idGen.init();
   config.thisId = idGen.next();
   replaceOuter(ast.body);
+  var literalSet = getLiteralSet(ast),
+      literalMap = new Map,
+      definedMap = new Map;
   literalSet.forEach(function (item) {
     literalMap.set(item, idGen.next());
   });
   config.defined.forEach(function (item) {
     definedMap.set(item, idGen.next());
   });
-  console.log(JSON.stringify(ast, null, 2));
   replace(ast, literalMap, definedMap);
-  console.log(JSON.stringify(ast, null, 2));
   return wrap(ast, literalMap, definedMap);
 }
 
