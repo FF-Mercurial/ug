@@ -6,10 +6,12 @@ var ast = require('./ast'),
     walk = ast.walk,
     isDecl = ast.isDecl,
     isFunc = ast.isFunc,
+    usedEval = false,
     declSet;
 
 function getDeclSet(ast) {
   declSet = new Set;
+  usedEval = false;
   // is function, add 'arguments' and params to decl set, walk into the body
   if (isFunc(ast)) {
     declSet.add('arguments');
@@ -34,6 +36,11 @@ function _walk(node) {
     var id;
     // found decl
     if (id = isDecl(node)) declSet.add(id);
+    // used eval
+    if (node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' && node.callee.name === 'eval') {
+      usedEval = true;
+    }
     // don't walk in function
     if (!isFunc(node)) {
       Object.getOwnPropertyNames(node).forEach(function (key) {
@@ -45,3 +52,6 @@ function _walk(node) {
 }
 
 module.exports = getDeclSet;
+module.__defineGetter__('usedEval', function () {
+  return usedEval;
+});

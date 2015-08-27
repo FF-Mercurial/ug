@@ -58,8 +58,8 @@ function _walk(node) {
       if (node.value !== 'use strict' && !node.regex) literalSet.add(node.value);
     } else if (node.type === 'VariableDeclarator') {
       _walk(node.init);
-    // rewrite global var (don't rewrite in with statement)
-    } else if (node.type === 'Identifier' && !declSet.has(node.name) && !inWith) {
+    // rewrite global var (don't rewrite in with statement or function used eval)
+    } else if (node.type === 'Identifier' && !declSet.has(node.name) && !inWith && !getDeclSet.usedEval) {
       literalSet.add(node.name);
       utils.assignObj(node, {
         type: 'MemberExpression',

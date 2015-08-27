@@ -10,7 +10,7 @@ function ugFile(srcFile, dstFile) {
 }
 
 if (process.argv[2]) {
-  var dir = path.resolve(__dirname, process.argv[2]);
+  var dir = path.resolve('.', process.argv[2]);
   ugDirInplace(dir);
 } else {
   ugFile('tmp.js', 'out.js');
