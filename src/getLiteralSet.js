@@ -9,7 +9,7 @@
 
 var ast = require('./ast'),
     getDeclSet = require('./getDeclSet'),
-    utils = require('./utils'),
+    _ = require('./util'),
     config = require('./config'),
     Set = require('./Set'),
     walk = ast.walk,
@@ -35,12 +35,12 @@ function _walk(node) {
   walk(node, function (node) {
     // is function, push scope and walk body
     if (isFunc(node)) {
-      declSetStack.push(declSet = utils.unionSet(declSet, getDeclSet(node)));
+      declSetStack.push(declSet = _.unionSet(declSet, getDeclSet(node)));
       _walk(node.body);
       declSet = declSetStack.pop();
     // is catch clause, push scope and walk body
     } else if (node.type === 'CatchClause') {
-      declSetStack.push(declSet = utils.unionSet(declSet, getDeclSet(node)));
+      declSetStack.push(declSet = _.unionSet(declSet, getDeclSet(node)));
       _walk(node.body);
       declSet = declSetStack.pop();
     // rewrite obj.prop
@@ -61,7 +61,7 @@ function _walk(node) {
     // rewrite global var (don't rewrite in with statement or function used eval)
     } else if (node.type === 'Identifier' && !declSet.has(node.name) && !inWith && !getDeclSet.usedEval) {
       literalSet.add(node.name);
-      utils.assignObj(node, {
+      _.assignObj(node, {
         type: 'MemberExpression',
         computed: true,
         object: {

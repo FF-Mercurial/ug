@@ -2,7 +2,7 @@
 
 var ast = require('./ast'),
     config = require('./config'),
-    utils = require('./utils'),
+    _ = require('./util'),
     walk = ast.walk,
     isFunc = ast.isFunc,
     clearNode = ast.clearNode;
@@ -21,7 +21,7 @@ function _walk(node, isExpression) {
   walk(node, function () {
     // replace this
     if (node.type === 'ThisExpression') {
-      utils.assignObj(node, {
+      _.assignObj(node, {
         type: 'Identifier',
         name: config.thisId
       });
@@ -81,7 +81,7 @@ function _walk(node, isExpression) {
         }
       });
       if (expressions.length > 0) {
-        utils.assignObj(node, {
+        _.assignObj(node, {
           type: 'SequenceExpression',
           expressions: expressions
         });

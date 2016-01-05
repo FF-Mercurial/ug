@@ -9,6 +9,10 @@ function ugFile(srcFile, dstFile) {
   fs.writeFileSync(dstFile, ug(fs.readFileSync(srcFile)));
 }
 
+function inplace(file) {
+  fs.writeFileSync(file, ug(fs.readFileSync(file)));
+}
+
 if (process.argv[2]) {
   var dir = path.resolve('.', process.argv[2]);
   ugDirInplace(dir);
@@ -18,16 +22,16 @@ if (process.argv[2]) {
 
 function ugDirInplace(dir) {
   (function walk(dir) {
-      if (fs.statSync(dir).isFile()) {
-        if (path.extname(dir) === '.js') {
-          console.log(dir);
-          ug.inplace(dir);
-        }
-      } else {
-        fs.readdirSync(dir).forEach(function (filename) {
-          var filepath = path.resolve(dir, filename);
-          walk(filepath);
-        });
+    if (fs.statSync(dir).isFile()) {
+      if (path.extname(dir) === '.js') {
+        console.log(dir);
+        inplace(dir);
       }
+    } else {
+      fs.readdirSync(dir).forEach(function (filename) {
+        var filepath = path.resolve(dir, filename);
+        walk(filepath);
+      });
+    }
   })(dir);
 }

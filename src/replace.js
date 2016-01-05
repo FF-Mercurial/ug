@@ -1,7 +1,7 @@
 'use strict';
 
 var ast = require('./ast'),
-    utils = require('./utils'),
+    _ = require('./util'),
     config = require('./config'),
     walk = ast.walk;
 
@@ -19,7 +19,7 @@ function _walk(node) {
     // replace literal
     if (node.type === 'Literal' && !node.regex) {
       if (uglyId = literalMap.get(node.value)) {
-        utils.assignObj(node, {
+        _.assignObj(node, {
           type: 'Identifier',
           name: uglyId
         });

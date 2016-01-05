@@ -3,7 +3,7 @@
 var getLiteralSet = require('./getLiteralSet'),
     idGen = require('./idGen'),
     replace = require('./replace'),
-    utils = require('./utils'),
+    _ = require('./util'),
     config = require('./config'),
     replaceOuter = require('./replaceOuter'),
     Map = require('./Map');
@@ -11,7 +11,6 @@ var getLiteralSet = require('./getLiteralSet'),
 config.defined = ['undefined'];
 
 function ug(ast) {
-  idGen.init();
   config.thisId = idGen.next();
   replaceOuter(ast.body);
   var literalSet = getLiteralSet(ast),

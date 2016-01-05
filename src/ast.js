@@ -1,6 +1,6 @@
 'use strict';
 
-var utils = require('./utils');
+var _ = require('./util');
 
 exports.isDecl = function (node) {
   return (node.type === 'VariableDeclarator' ||
@@ -26,12 +26,12 @@ exports.walk = function (node, cb) {
 
 exports.clearNode = function (node, isExpression) {
   if (isExpression) {
-    utils.assignObj(node, {
+    _.assignObj(node, {
       type: 'SequenceExpression',
       expressions: []
     });
   } else {
-    utils.assignObj(node, {
+    _.assignObj(node, {
       type: 'EmptyStatement'
     });
   }
